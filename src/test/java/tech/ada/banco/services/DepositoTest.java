@@ -4,6 +4,7 @@ import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
+import tech.ada.banco.exceptions.ResourceNotFoundException;
 import tech.ada.banco.model.Conta;
 import tech.ada.banco.model.ModalidadeConta;
 import tech.ada.banco.repository.ContaRepository;
@@ -51,7 +52,9 @@ class DepositoTest {
     @Test
     void testDepositoSaldoNegativo() {
         Conta conta = new Conta(ModalidadeConta.CC, null);
+        conta.deposito(BigDecimal.TEN);
         when(repository.findContaByNumeroConta(10)).thenReturn(Optional.of(conta));
+        assertEquals(BigDecimal.valueOf(10), conta.getSaldo(), "O saldo inicial da conta deve ser alterado para 10");
 
         String message = assertThrows(RuntimeException.class,
                 () -> {
@@ -60,18 +63,26 @@ class DepositoTest {
 
         assertTrue(message.contains("Valor informado está inválido."));
 
-//        verify(repository, times(1)).save(conta);
-//        assertEquals(BigDecimal.valueOf(18.5).setScale(2), resp);
-//        assertEquals(BigDecimal.valueOf(18.5).setScale(2), conta.getSaldo());
+        verify(repository, times(0)).save(any());
+        assertEquals(BigDecimal.TEN, conta.getSaldo());
     }
 
-    private Conta criarConta(double valor, int numeroConta) {
+    @Test
+    void testDepositoContaInvalida() {
         Conta conta = new Conta(ModalidadeConta.CC, null);
-        conta.deposito(BigDecimal.valueOf(valor));
-        when(repository.findContaByNumeroConta(numeroConta)).thenReturn(java.util.Optional.of(conta));
-        assertEquals(BigDecimal.valueOf(valor), conta.getSaldo(),
-                "O saldo inicial da conta deve ser alterado para " + valor);
-        return conta;
+        conta.deposito(BigDecimal.TEN);
+        when(repository.findContaByNumeroConta(10)).thenReturn(Optional.of(conta));
+        assertEquals(BigDecimal.valueOf(10), conta.getSaldo(), "O saldo inicial da conta deve ser alterado para 10");
+
+        try {
+            deposito.executar(1, BigDecimal.ONE);
+            fail("A conta não deveria ter sido encontrada.");
+        } catch (ResourceNotFoundException e) {
+
+        }
+
+        verify(repository, times(0)).save(any());
+        assertEquals(BigDecimal.TEN, conta.getSaldo());
     }
 
 
