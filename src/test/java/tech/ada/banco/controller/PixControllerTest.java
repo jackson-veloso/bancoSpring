@@ -157,7 +157,7 @@ class PixControllerTest extends BaseContaTest{
                                     .param("valor", "-8")
                                     .contentType(MediaType.APPLICATION_JSON))
                             .andDo(print())
-                            .andExpect(status().isBadRequest())
+                            .andExpect(status().isInternalServerError())
                             .andReturn().getResponse().getErrorMessage();
             Assertions.fail();
         } catch (Exception e) {

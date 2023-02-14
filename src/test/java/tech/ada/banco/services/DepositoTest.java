@@ -19,7 +19,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 class DepositoTest {
     private final ContaRepository repository = Mockito.mock(ContaRepository.class);
     private final Deposito deposito = new Deposito(repository);
-    private final Saque saque = new Saque(repository);
 
     @Test
     void testDepositoSaldo() {
